@@ -1,3 +1,5 @@
+package src;
+
 public class KurirFreelance extends Kurir {
     private int totalJamTerbang;
 

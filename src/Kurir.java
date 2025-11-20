@@ -1,3 +1,5 @@
+package src;
+
 public abstract class Kurir implements Deliverable {
     protected String namaKurir;
     protected double gajiPokok;

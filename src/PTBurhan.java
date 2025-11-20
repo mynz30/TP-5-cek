@@ -28,6 +28,31 @@ public class PTBurhan {
         System.out.println("Paket baru untuk " + paket.getNamaPenerima() + " dimasukkan ke sistem " + namaPerusahaan);
     }
 
+    // Load kurir dari CSV
+    public void loadDataKurirDariCSV(String filePath) {
+        ArrayList<Kurir> kurirBaru = CSVLoader.loadKurirDariCSV(filePath);
+        
+        for (Kurir kurir : kurirBaru) {
+            try {
+                tambahKurir(kurir);
+            } catch (DuplikasiKurirException e) {
+                System.out.println("[WARN] " + e.getMessage());
+                ErrorLogger.tulisLog(e.getMessage());
+            }
+        }
+        System.out.println();
+    }
+
+    // Load paket dari CSV
+    public void loadDataPaketDariCSV(String filePath) {
+        ArrayList<Paket> paketBaru = CSVLoader.loadPaketDariCSV(filePath);
+        
+        for (Paket paket : paketBaru) {
+            tambahPaket(paket);
+        }
+        System.out.println();
+    }
+
     public void tampilkanSemuaKurir() {
         System.out.println("=== Daftar Kurir di " + namaPerusahaan + " ===");
         for (Kurir kurir : listKurir) {
@@ -170,13 +195,15 @@ public class PTBurhan {
             System.out.println("=== MENU " + namaPerusahaan + " ===");
             System.out.println("1. Tambah Kurir");
             System.out.println("2. Tambah Paket");
-            System.out.println("3. Tampilkan Semua Kurir");
-            System.out.println("4. Tampilkan Semua Paket");
-            System.out.println("5. Assign Paket ke Kurir");
-            System.out.println("6. Selesaikan Paket");
-            System.out.println("7. Lihat Laporan Keuangan");
-            System.out.println("8. Baca Log Error");
-            System.out.println("9. Keluar dari PTBurhan");
+            System.out.println("3. Load Data Kurir dari CSV");
+            System.out.println("4. Load Data Paket dari CSV");
+            System.out.println("5. Tampilkan Semua Kurir");
+            System.out.println("6. Tampilkan Semua Paket");
+            System.out.println("7. Assign Paket ke Kurir");
+            System.out.println("8. Selesaikan Paket");
+            System.out.println("9. Lihat Laporan Keuangan");
+            System.out.println("10. Baca Log Error");
+            System.out.println("11. Keluar dari PTBurhan");
             System.out.print("Pilih menu: ");
             
             int pilihan = scanner.nextInt();
@@ -221,12 +248,28 @@ public class PTBurhan {
                 System.out.println();
                 
             } else if (pilihan == 3) {
-                tampilkanSemuaKurir();
+                System.out.print("Masukkan path file CSV kurir (default: data/kurir.csv): ");
+                String pathKurir = scanner.nextLine();
+                if (pathKurir.isEmpty()) {
+                    pathKurir = "data/kurir.csv";
+                }
+                loadDataKurirDariCSV(pathKurir);
                 
             } else if (pilihan == 4) {
-                tampilkanSemuaPaket();
+                System.out.print("Masukkan path file CSV paket (default: data/paket.csv): ");
+                String pathPaket = scanner.nextLine();
+                if (pathPaket.isEmpty()) {
+                    pathPaket = "data/paket.csv";
+                }
+                loadDataPaketDariCSV(pathPaket);
                 
             } else if (pilihan == 5) {
+                tampilkanSemuaKurir();
+                
+            } else if (pilihan == 6) {
+                tampilkanSemuaPaket();
+                
+            } else if (pilihan == 7) {
                 try {
                     assignPaketKeKurir(scanner);
                 } catch (PaketTidakDitemukanException e) {
@@ -236,7 +279,7 @@ public class PTBurhan {
                 }
                 System.out.println();
                 
-            } else if (pilihan == 6) {
+            } else if (pilihan == 8) {
                 try {
                     selesaikanPaket(scanner);
                 } catch (PaketTidakDitemukanException e) {
@@ -244,15 +287,15 @@ public class PTBurhan {
                 }
                 System.out.println();
                 
-            } else if (pilihan == 7) {
+            } else if (pilihan == 9) {
                 lihatLaporanKeuangan();
                 
-            } else if (pilihan == 8) {
+            } else if (pilihan == 10) {
                 System.out.println("=== LOG ERROR ===");
                 ErrorLogger.bacaLog();
                 System.out.println();
                 
-            } else if (pilihan == 9) {
+            } else if (pilihan == 11) {
                 System.out.println("Keluar dari PTBurhan...");
                 System.out.println();
                 System.out.println("Terima kasih telah menggunakan layanan BurhanExpress!");
