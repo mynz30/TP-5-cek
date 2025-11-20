@@ -42,7 +42,7 @@ public class PTBurhan {
         }
     }
 
-    // Assign paket ke kurir dengan exception handling
+    // Assign paket ke kurir dengan exception handling dan logging
     public void assignPaketKeKurir(Scanner scanner) throws PaketTidakDitemukanException, KapasitasPenuhException {
         if (listKurir.isEmpty()) {
             System.out.println("Belum ada kurir di sistem!");
@@ -81,13 +81,21 @@ public class PTBurhan {
         }
 
         if (paketDipilih == null) {
-            throw new PaketTidakDitemukanException("Paket dengan nomor " + noTracking + " tidak ditemukan!");
+            String errorMsg = "Paket dengan nomor " + noTracking + " tidak ditemukan!";
+            ErrorLogger.tulisLog(errorMsg);
+            throw new PaketTidakDitemukanException(errorMsg);
+        }
+
+        if (kurirDipilih.getCountPaket() >= kurirDipilih.getKapasitas()) {
+            String errorMsg = "Kapasitas kurir " + namaKurir + " sudah penuh!";
+            ErrorLogger.tulisLog(errorMsg);
+            throw new KapasitasPenuhException(errorMsg);
         }
 
         kurirDipilih.ambilPaket(paketDipilih);
     }
 
-    // Selesaikan paket dengan exception handling
+    // Selesaikan paket dengan exception handling dan logging
     public void selesaikanPaket(Scanner scanner) throws PaketTidakDitemukanException {
         if (listKurir.isEmpty()) {
             System.out.println("Belum ada kurir di sistem!");
@@ -113,7 +121,12 @@ public class PTBurhan {
         System.out.print("Masukkan nomor tracking paket: ");
         String noTracking = scanner.nextLine();
 
-        kurirDipilih.kirimPaket(noTracking);
+        try {
+            kurirDipilih.kirimPaket(noTracking);
+        } catch (PaketTidakDitemukanException e) {
+            ErrorLogger.tulisLog(e.getMessage());
+            throw e;
+        }
     }
 
     public void lihatLaporanKeuangan() {
@@ -162,7 +175,8 @@ public class PTBurhan {
             System.out.println("5. Assign Paket ke Kurir");
             System.out.println("6. Selesaikan Paket");
             System.out.println("7. Lihat Laporan Keuangan");
-            System.out.println("8. Keluar dari PTBurhan");
+            System.out.println("8. Baca Log Error");
+            System.out.println("9. Keluar dari PTBurhan");
             System.out.print("Pilih menu: ");
             
             int pilihan = scanner.nextInt();
@@ -187,6 +201,7 @@ public class PTBurhan {
                     tambahKurir(kurir);
                 } catch (DuplikasiKurirException e) {
                     System.out.println("[ERROR] " + e.getMessage());
+                    ErrorLogger.tulisLog(e.getMessage());
                 }
                 System.out.println();
                 
@@ -227,11 +242,17 @@ public class PTBurhan {
                 } catch (PaketTidakDitemukanException e) {
                     System.out.println("[ERROR] " + e.getMessage());
                 }
+                System.out.println();
                 
             } else if (pilihan == 7) {
                 lihatLaporanKeuangan();
                 
             } else if (pilihan == 8) {
+                System.out.println("=== LOG ERROR ===");
+                ErrorLogger.bacaLog();
+                System.out.println();
+                
+            } else if (pilihan == 9) {
                 System.out.println("Keluar dari PTBurhan...");
                 System.out.println();
                 System.out.println("Terima kasih telah menggunakan layanan BurhanExpress!");
