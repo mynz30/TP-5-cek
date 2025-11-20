@@ -12,26 +12,22 @@ public class PTBurhan {
         this.listPaket = new ArrayList<>();
     }
 
-    // Menambahkan kurir ke perusahaan
-    public void tambahKurir(Kurir kurir) {
-        // Validasi nama kurir tidak duplikat
+    // Menambahkan kurir dengan exception handling
+    public void tambahKurir(Kurir kurir) throws DuplikasiKurirException {
         for (Kurir k : listKurir) {
             if (k.getNamaKurir().equalsIgnoreCase(kurir.getNamaKurir())) {
-                System.out.println("Kurir dengan nama " + kurir.getNamaKurir() + " sudah ada!");
-                return;
+                throw new DuplikasiKurirException("Kurir dengan nama " + kurir.getNamaKurir() + " sudah ada!");
             }
         }
         listKurir.add(kurir);
         System.out.println("Kurir " + kurir.getNamaKurir() + " bergabung ke " + namaPerusahaan);
     }
 
-    // Menambahkan paket ke sistem
     public void tambahPaket(Paket paket) {
         listPaket.add(paket);
         System.out.println("Paket baru untuk " + paket.getNamaPenerima() + " dimasukkan ke sistem " + namaPerusahaan);
     }
 
-    // Menampilkan semua kurir
     public void tampilkanSemuaKurir() {
         System.out.println("=== Daftar Kurir di " + namaPerusahaan + " ===");
         for (Kurir kurir : listKurir) {
@@ -39,7 +35,6 @@ public class PTBurhan {
         }
     }
 
-    // Menampilkan semua paket
     public void tampilkanSemuaPaket() {
         System.out.println("=== Daftar Paket di " + namaPerusahaan + " ===");
         for (Paket paket : listPaket) {
@@ -47,8 +42,8 @@ public class PTBurhan {
         }
     }
 
-    // Assign paket ke kurir (Task 5: menggunakan nama kurir dan nomor tracking)
-    public void assignPaketKeKurir(Scanner scanner) {
+    // Assign paket ke kurir dengan exception handling
+    public void assignPaketKeKurir(Scanner scanner) throws PaketTidakDitemukanException, KapasitasPenuhException {
         if (listKurir.isEmpty()) {
             System.out.println("Belum ada kurir di sistem!");
             return;
@@ -61,7 +56,6 @@ public class PTBurhan {
         System.out.print("Masukkan nama kurir: ");
         String namaKurir = scanner.nextLine();
 
-        // Cari kurir berdasarkan nama
         Kurir kurirDipilih = null;
         for (Kurir k : listKurir) {
             if (k.getNamaKurir().equalsIgnoreCase(namaKurir)) {
@@ -78,7 +72,6 @@ public class PTBurhan {
         System.out.print("Masukkan nomor tracking: ");
         String noTracking = scanner.nextLine();
 
-        // Cari paket berdasarkan nomor tracking
         Paket paketDipilih = null;
         for (Paket p : listPaket) {
             if (p.getNoTracking().equals(noTracking)) {
@@ -88,23 +81,14 @@ public class PTBurhan {
         }
 
         if (paketDipilih == null) {
-            System.out.println("Paket dengan nomor tracking " + noTracking + " tidak ditemukan!");
-            return;
+            throw new PaketTidakDitemukanException("Paket dengan nomor " + noTracking + " tidak ditemukan!");
         }
 
-        // Cek apakah kurir sudah penuh
-        if (kurirDipilih.getCountPaket() >= kurirDipilih.getKapasitas()) {
-            System.out.println("Kapasitas kurir " + namaKurir + " sudah penuh");
-            System.out.println("Paket telah diambil oleh kurir lain!");
-            return;
-        }
-
-        // Assign paket ke kurir
-        kurirDipilih.addJob(paketDipilih);
+        kurirDipilih.ambilPaket(paketDipilih);
     }
 
-    // Menyelesaikan paket (Task 5: menggunakan nama kurir dan nomor tracking)
-    public void selesaikanPaket(Scanner scanner) {
+    // Selesaikan paket dengan exception handling
+    public void selesaikanPaket(Scanner scanner) throws PaketTidakDitemukanException {
         if (listKurir.isEmpty()) {
             System.out.println("Belum ada kurir di sistem!");
             return;
@@ -113,7 +97,6 @@ public class PTBurhan {
         System.out.print("Masukkan nama kurir: ");
         String namaKurir = scanner.nextLine();
 
-        // Cari kurir berdasarkan nama
         Kurir kurirDipilih = null;
         for (Kurir k : listKurir) {
             if (k.getNamaKurir().equalsIgnoreCase(namaKurir)) {
@@ -130,56 +113,25 @@ public class PTBurhan {
         System.out.print("Masukkan nomor tracking paket: ");
         String noTracking = scanner.nextLine();
 
-        // Cari paket di list paket kurir
-        Paket paketDitemukan = null;
-        for (int i = 0; i < kurirDipilih.getCountPaket(); i++) {
-            if (kurirDipilih.listPaket[i].getNoTracking().equals(noTracking)) {
-                paketDitemukan = kurirDipilih.listPaket[i];
-                break;
-            }
-        }
-
-        if (paketDitemukan != null) {
-            System.out.println("Paket dengan nomor tracking:");
-            
-            // Ubah status paket menjadi "Diterima"
-            String namaPenerima = paketDitemukan.getNamaPenerima();
-            paketDitemukan.ubahStatus("Diterima");
-            
-            // Hitung gaji kurir berdasarkan tipe paket
-            kurirDipilih.hitungGaji(paketDitemukan);
-            
-            System.out.println("=> " + noTracking + " sudah diterima oleh " + namaPenerima);
-        } else {
-            System.out.println("Paket dengan nomor tracking:");
-            System.out.println("=> " + noTracking + " sudah diterima");
-        }
-        System.out.println();
+        kurirDipilih.kirimPaket(noTracking);
     }
 
-    // Melihat laporan keuangan (Task 5: dengan profit perusahaan 10% dari gaji kurir)
     public void lihatLaporanKeuangan() {
         System.out.println("=== Laporan Keuangan " + namaPerusahaan + " ===");
         
         double totalGajiKurir = 0;
-        
-        // Hitung total gaji semua kurir
         for (Kurir kurir : listKurir) {
             totalGajiKurir += kurir.getGajiPokok();
         }
         
-        // Profit perusahaan = 10% dari total gaji kurir
         double profitPerusahaan = totalGajiKurir * 0.10;
-        
-        System.out.println("Total Proffit: Rp" + (int)profitPerusahaan);
+        System.out.println("Total Profit: Rp" + (int)profitPerusahaan);
         System.out.println();
     }
 
-    // Menu utama
     public void start() {
         Scanner scanner = new Scanner(System.in);
         
-        // ASCII Art Banner
         System.out.println(" ____             _                   _____                               ");
         System.out.println("|  _ \\           | |                 |  __|                              ");
         System.out.println("| |_) |_   _ _ __| |__   __ _ _ __   | |__  __  ___ __  _ __ ___  ___ ___ ");
@@ -216,9 +168,7 @@ public class PTBurhan {
             int pilihan = scanner.nextInt();
             scanner.nextLine();
 
-            // Menggunakan if-else untuk memilih menu
             if (pilihan == 1) {
-                // Menu 1: Tambah Kurir
                 System.out.print("Masukkan tipe kurir (Freelance/Tetap): ");
                 String tipe = scanner.nextLine().toLowerCase();
                 System.out.print("Masukkan nama kurir: ");
@@ -227,17 +177,20 @@ public class PTBurhan {
                 int kapasitas = scanner.nextInt();
                 scanner.nextLine();
 
-                Kurir kurir;
-                if (tipe.equals("freelance")) {
-                    kurir = new KurirFreelance(namaKurir, kapasitas);
-                } else {
-                    kurir = new KurirTetap(namaKurir, kapasitas);
+                try {
+                    Kurir kurir;
+                    if (tipe.equals("freelance")) {
+                        kurir = new KurirFreelance(namaKurir, kapasitas);
+                    } else {
+                        kurir = new KurirTetap(namaKurir, kapasitas);
+                    }
+                    tambahKurir(kurir);
+                } catch (DuplikasiKurirException e) {
+                    System.out.println("[ERROR] " + e.getMessage());
                 }
-                tambahKurir(kurir);
                 System.out.println();
                 
             } else if (pilihan == 2) {
-                // Menu 2: Tambah Paket
                 System.out.print("Masukkan tipe paket (SameDay/NextDay): ");
                 String tipePaket = scanner.nextLine().toLowerCase();
                 System.out.print("Masukkan nama penerima: ");
@@ -253,35 +206,38 @@ public class PTBurhan {
                 System.out.println();
                 
             } else if (pilihan == 3) {
-                // Menu 3: Tampilkan Semua Kurir
                 tampilkanSemuaKurir();
                 
             } else if (pilihan == 4) {
-                // Menu 4: Tampilkan Semua Paket
                 tampilkanSemuaPaket();
                 
             } else if (pilihan == 5) {
-                // Menu 5: Assign Paket ke Kurir
-                assignPaketKeKurir(scanner);
+                try {
+                    assignPaketKeKurir(scanner);
+                } catch (PaketTidakDitemukanException e) {
+                    System.out.println("[ERROR] " + e.getMessage());
+                } catch (KapasitasPenuhException e) {
+                    System.out.println("[ERROR] " + e.getMessage());
+                }
                 System.out.println();
                 
             } else if (pilihan == 6) {
-                // Menu 6: Selesaikan Paket
-                selesaikanPaket(scanner);
+                try {
+                    selesaikanPaket(scanner);
+                } catch (PaketTidakDitemukanException e) {
+                    System.out.println("[ERROR] " + e.getMessage());
+                }
                 
             } else if (pilihan == 7) {
-                // Menu 7: Lihat Laporan Keuangan
                 lihatLaporanKeuangan();
                 
             } else if (pilihan == 8) {
-                // Menu 8: Keluar
                 System.out.println("Keluar dari PTBurhan...");
                 System.out.println();
                 System.out.println("Terima kasih telah menggunakan layanan BurhanExpress!");
                 running = false;
                 
             } else {
-                // Pilihan tidak valid
                 System.out.println("Pilihan tidak valid!");
                 System.out.println();
             }
