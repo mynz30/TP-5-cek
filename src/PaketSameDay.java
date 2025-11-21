@@ -1,4 +1,3 @@
-package src;
 public class PaketSameDay extends Paket {
     public PaketSameDay(String nama) {
         super(nama, "SameDay");

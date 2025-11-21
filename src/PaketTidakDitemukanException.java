@@ -1,5 +1,5 @@
-public class PaketTidakDitemukanException extends Exception {
-    public PaketTidakDitemukanException(String message) {
+public class DuplikasiKurirException extends Exception {
+    public DuplikasiKurirException(String message) {
         super(message);
     }
 }
